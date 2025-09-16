@@ -31,17 +31,43 @@ const elements = {
  * Initialize the application
  */
 function init() {
-    // Setup event listeners
-    setupEventListeners();
-    
-    // Initialize universal options with default values
-    initializeUniversalOptions();
-    
-    // Generate initial dynamic options
-    updateDynamicOptions();
-    
-    // Generate initial prompt after everything is set up (this will also update context)
-    setTimeout(() => updatePrompt(), 200);
+    try {
+        console.log('Initializing CodePrompt web application...');
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Initialize universal options with default values
+        initializeUniversalOptions();
+        
+        // Generate initial dynamic options
+        updateDynamicOptions();
+        
+        // Generate initial prompt after everything is set up (this will also update context)
+        setTimeout(() => {
+            try {
+                updatePrompt();
+                console.log('CodePrompt initialized successfully');
+            } catch (err) {
+                console.error('Error during initial prompt update:', err);
+                showToast('Initialization warning - some features may not work ⚠️');
+            }
+        }, 200);
+        
+    } catch (err) {
+        console.error('Critical error during initialization:', err);
+        showToast('Failed to initialize application ❌');
+        
+        // Show fallback UI or instructions
+        const fallbackMessage = document.createElement('div');
+        fallbackMessage.innerHTML = `
+            <div style="padding: 20px; text-align: center; color: #ff6b6b;">
+                <h3>⚠️ Application Error</h3>
+                <p>Please refresh the page or check the console for details.</p>
+            </div>
+        `;
+        document.body.appendChild(fallbackMessage);
+    }
 }
 
 /**
@@ -98,10 +124,20 @@ function handleScaffoldTypeChange(event) {
  * Handle option change (both dynamic and universal)
  */
 function handleOptionChange(event) {
-    const name = event.target.name;
-    const value = event.target.value;
+    const input = event.target;
+    const name = input.name;
+    const value = input.value;
     
-    currentOptions[name] = value;
+    // Validate and sanitize input
+    if (input.type === 'text' || input.tagName === 'TEXTAREA') {
+        if (!validateFormInput(input)) {
+            return; // Don't update if validation fails
+        }
+    }
+    
+    // Sanitize the value before storing
+    const sanitizedValue = typeof value === 'string' ? sanitizeInput(value) : value;
+    currentOptions[name] = sanitizedValue;
     updatePrompt();
 }
 
@@ -230,41 +266,98 @@ function createFormElement(config) {
  * Update the generated prompt and analytics
  */
 function updatePrompt() {
-    // Collect all current options (dynamic + universal)
-    const allOptions = { ...currentOptions };
-    
-    // Add universal options
-    const universalInputs = document.querySelectorAll('.universal-options input, .universal-options select');
-    universalInputs.forEach(input => {
-        if (input.value) {
-            allOptions[input.name] = input.value;
+    try {
+        // Collect all current options (dynamic + universal)
+        const allOptions = { ...currentOptions };
+        
+        // Add universal options
+        const universalInputs = document.querySelectorAll('.universal-options input, .universal-options select');
+        universalInputs.forEach(input => {
+            if (input && input.value) {
+                allOptions[input.name] = input.value;
+            }
+        });
+        
+        // Collect dynamic options to ensure they're all captured
+        const dynamicInputs = document.querySelectorAll('#dynamicOptions input, #dynamicOptions select');
+        dynamicInputs.forEach(input => {
+            if (input && input.value) {
+                allOptions[input.name] = input.value;
+            }
+        });
+        
+        // Generate base prompt with error handling
+        let basePrompt;
+        try {
+            basePrompt = CodePrompt.buildPrompt(currentScaffoldType, allOptions);
+        } catch (buildErr) {
+            console.error('Error building prompt:', buildErr);
+            basePrompt = 'Error generating prompt. Please check your configuration.';
         }
-    });
-    
-    // Collect dynamic options to ensure they're all captured
-    const dynamicInputs = document.querySelectorAll('#dynamicOptions input, #dynamicOptions select');
-    dynamicInputs.forEach(input => {
-        if (input.value) {
-            allOptions[input.name] = input.value;
+        
+        // Optimize prompt with context
+        let optimizedPrompt;
+        try {
+            const projectContext = CodePrompt.getProjectContext();
+            optimizedPrompt = CodePrompt.optimizePrompt(basePrompt, allOptions, projectContext);
+        } catch (optimizeErr) {
+            console.error('Error optimizing prompt:', optimizeErr);
+            optimizedPrompt = basePrompt; // Fallback to base prompt
         }
-    });
-    
-    
-    // Generate base prompt
-    const basePrompt = CodePrompt.buildPrompt(currentScaffoldType, allOptions);
-    
-    // Optimize prompt with context (context is now shown in UI based on user selections)
-    const optimizedPrompt = CodePrompt.optimizePrompt(basePrompt, allOptions, {});
-    
-    // Analyze efficiency
-    const analysis = CodePrompt.analyzeTokenEfficiency(optimizedPrompt);
-    
-    // Update display
-    updatePromptDisplay(optimizedPrompt, analysis);
-    updateAnalyticsDisplay(analysis);
-    updateOptimizationTips(analysis.recommendations);
-    updatePromptVariations(basePrompt, allOptions);
-    updateContextDisplay();
+        
+        // Analyze efficiency
+        let analysis;
+        try {
+            analysis = CodePrompt.analyzeTokenEfficiency(optimizedPrompt);
+        } catch (analyzeErr) {
+            console.error('Error analyzing prompt:', analyzeErr);
+            analysis = {
+                estimatedTokens: Math.ceil(optimizedPrompt.length / 4),
+                efficiency: 'unknown',
+                recommendations: []
+            };
+        }
+        
+        // Update display components with individual error handling
+        try {
+            updatePromptDisplay(optimizedPrompt, analysis);
+        } catch (displayErr) {
+            console.error('Error updating prompt display:', displayErr);
+        }
+        
+        try {
+            updateAnalyticsDisplay(analysis);
+        } catch (analyticsErr) {
+            console.error('Error updating analytics display:', analyticsErr);
+        }
+        
+        try {
+            updateOptimizationTips(analysis.recommendations || []);
+        } catch (tipsErr) {
+            console.error('Error updating optimization tips:', tipsErr);
+        }
+        
+        try {
+            updatePromptVariations(basePrompt, allOptions);
+        } catch (variationsErr) {
+            console.error('Error updating prompt variations:', variationsErr);
+        }
+        
+        try {
+            updateContextDisplay();
+        } catch (contextErr) {
+            console.error('Error updating context display:', contextErr);
+        }
+        
+    } catch (err) {
+        console.error('Critical error in updatePrompt:', err);
+        showToast('Error updating prompt. Please refresh the page ❌');
+        
+        // Set minimal fallback content
+        if (elements.promptContent) {
+            elements.promptContent.innerHTML = '<p class="error">Error generating prompt. Please check your configuration.</p>';
+        }
+    }
 }
 
 /**
@@ -453,127 +546,212 @@ function updatePromptVariations(basePrompt, options) {
 }
 
 /**
+ * Modern clipboard copy with fallbacks
+ * @param {string} text - Text to copy
+ * @param {string} successMessage - Success message to show
+ */
+async function copyToClipboard(text, successMessage) {
+    if (!text) {
+        showToast('Nothing to copy ⚠️');
+        return;
+    }
+    
+    try {
+        // Try modern Clipboard API first
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            showToast(successMessage);
+            return;
+        }
+    } catch (clipboardErr) {
+        console.warn('Clipboard API failed, trying fallback:', clipboardErr);
+    }
+    
+    // Fallback for older browsers or when clipboard API fails
+    try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        textArea.style.top = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        // Try the deprecated execCommand as last resort
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+            showToast(successMessage);
+        } else {
+            throw new Error('execCommand failed');
+        }
+    } catch (fallbackErr) {
+        console.error('All clipboard methods failed:', fallbackErr);
+        showToast('Failed to copy to clipboard. Please copy manually ❌');
+        
+        // Show the text in a prompt as final fallback
+        prompt('Copy this text manually:', text);
+    }
+}
+
+/**
  * Copy prompt to clipboard
  */
 async function copyPromptToClipboard() {
     const promptText = elements.promptContent.textContent;
-    
-    try {
-        await navigator.clipboard.writeText(promptText);
-        showToast('Prompt copied to clipboard! 📋');
-    } catch (err) {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = promptText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showToast('Prompt copied to clipboard! 📋');
-    }
+    await copyToClipboard(promptText, 'Prompt copied to clipboard! 📋');
 }
 
 /**
  * Copy variation to clipboard
  */
 async function copyVariation(promptText) {
-    try {
-        await navigator.clipboard.writeText(promptText);
-        showToast('Variation copied to clipboard! 📋');
-    } catch (err) {
-        const textArea = document.createElement('textarea');
-        textArea.value = promptText;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showToast('Variation copied to clipboard! 📋');
-    }
+    await copyToClipboard(promptText, 'Variation copied to clipboard! 📋');
 }
 
 /**
  * Download prompt as file
+ * @param {string} format - File format ('txt' or 'md')
  */
 function downloadPrompt(format) {
-    const prompt = elements.promptContent.textContent;
-    const analysis = CodePrompt.analyzeTokenEfficiency(prompt);
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    
-    let content, filename, mimeType;
-    
-    if (format === 'md') {
-        content = `# AI Prompt: ${currentScaffoldType}
+    try {
+        const prompt = elements.promptContent.textContent;
+        
+        if (!prompt || prompt.trim() === '') {
+            showToast('No prompt to download ⚠️');
+            return;
+        }
+        
+        const analysis = CodePrompt.analyzeTokenEfficiency(prompt);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        
+        let content, filename, mimeType;
+        
+        // Gather optimization tips if available
+        const optimizationTips = analysis.recommendations || [];
+        
+        if (format === 'md') {
+            content = `# CodePrompt AI Prompt: ${currentScaffoldType}
 
-## Prompt
+> Generated on ${new Date().toLocaleDateString()}
+
+## 🎯 Optimized Prompt
+
 \`\`\`
 ${prompt}
 \`\`\`
 
-## Analysis
-- **Token Count:** ${analysis.estimatedTokens}
-- **Efficiency:** ${analysis.efficiency}
+## 📈 Analysis & Metrics
 
-## Options
+- **Token Count:** ${analysis.estimatedTokens}
+- **Efficiency Rating:** ${analysis.efficiency}
+- **Character Length:** ${prompt.length}
+
+## ⚙️ Configuration Options
+
 \`\`\`json
 ${JSON.stringify(currentOptions, null, 2)}
 \`\`\`
 
-## Project Context
-\`\`\`json
-${JSON.stringify(currentProjectContext, null, 2)}
-\`\`\`
+${optimizationTips.length > 0 ? `## 💡 Optimization Tips
+
+${optimizationTips.map(tip => `- ${tip}`).join('\n')}
+
+` : ''}---
+*Generated by CodePrompt.me - Token-efficient AI prompt generator*
 `;
-        filename = `prompt-${currentScaffoldType}-${timestamp}.md`;
-        mimeType = 'text/markdown';
-    } else {
-        content = `${prompt}
+            filename = `codeprompt-${currentScaffoldType}-${timestamp}.md`;
+            mimeType = 'text/markdown';
+        } else {
+            content = `CodePrompt AI Prompt: ${currentScaffoldType.toUpperCase()}
+Generated: ${new Date().toLocaleString()}
 
---- ANALYSIS ---
-Tokens: ${analysis.estimatedTokens}
-Efficiency: ${analysis.efficiency}
+${'='.repeat(50)}
+OPTIMIZED PROMPT
+${'='.repeat(50)}
 
---- OPTIONS ---
-${JSON.stringify(currentOptions, null, 2)}`;
-        filename = `prompt-${currentScaffoldType}-${timestamp}.txt`;
-        mimeType = 'text/plain';
+${prompt}
+
+${'='.repeat(50)}
+ANALYSIS & METRICS
+${'='.repeat(50)}
+
+Token Count: ${analysis.estimatedTokens}
+Efficiency Rating: ${analysis.efficiency}
+Character Length: ${prompt.length}
+
+${'='.repeat(50)}
+CONFIGURATION OPTIONS
+${'='.repeat(50)}
+
+${JSON.stringify(currentOptions, null, 2)}
+
+${optimizationTips.length > 0 ? `${'='.repeat(50)}\nOPTIMIZATION TIPS\n${'='.repeat(50)}\n\n${optimizationTips.map(tip => `- ${tip}`).join('\n')}\n\n` : ''}---
+Generated by CodePrompt.me - Token-efficient AI prompt generator
+`;
+            filename = `codeprompt-${currentScaffoldType}-${timestamp}.txt`;
+            mimeType = 'text/plain';
+        }
+        
+        // Create and download the file
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        
+        // Clean up the URL object
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 1000);
+        
+        showToast(`Downloaded ${filename} 📥`);
+        
+    } catch (err) {
+        console.error('Error downloading prompt:', err);
+        showToast('Failed to download prompt ❌');
     }
-    
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    showToast(`Downloaded ${filename} 📥`);
 }
 
 /**
  * Share configuration via URL
  */
 function shareConfiguration() {
-    const config = {
-        type: currentScaffoldType,
-        options: currentOptions
-    };
-    
-    const encoded = btoa(JSON.stringify(config));
-    const shareUrl = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
-    
     try {
-        navigator.clipboard.writeText(shareUrl);
-        showToast('Share URL copied to clipboard! 🔗');
+        const config = {
+            type: currentScaffoldType,
+            options: currentOptions
+        };
+        
+        let encoded;
+        try {
+            const jsonString = JSON.stringify(config);
+            encoded = btoa(jsonString);
+        } catch (stringifyErr) {
+            console.error('Failed to serialize configuration:', stringifyErr);
+            showToast('Failed to create share URL ❌');
+            return;
+        }
+        
+        const shareUrl = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
+        
+        // Check URL length (browsers have limits)
+        if (shareUrl.length > 2000) {
+            showToast('Configuration too large for sharing ⚠️');
+            return;
+        }
+        
+        copyToClipboard(shareUrl, 'Share URL copied to clipboard! 🔗');
     } catch (err) {
-        const textArea = document.createElement('textarea');
-        textArea.value = shareUrl;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showToast('Share URL copied to clipboard! 🔗');
+        console.error('Unexpected error creating share URL:', err);
+        showToast('Failed to create share URL ❌');
     }
 }
 
@@ -586,10 +764,35 @@ function handleUrlParams() {
     
     if (configParam) {
         try {
-            const config = JSON.parse(atob(configParam));
+            // First decode the base64 string
+            let decodedString;
+            try {
+                decodedString = atob(configParam);
+            } catch (decodeErr) {
+                console.warn('Failed to decode shared configuration URL:', decodeErr);
+                showToast('Invalid share URL format ❌');
+                return;
+            }
+            
+            // Then parse the JSON
+            let config;
+            try {
+                config = JSON.parse(decodedString);
+            } catch (parseErr) {
+                console.warn('Failed to parse shared configuration JSON:', parseErr);
+                showToast('Invalid share URL content ❌');
+                return;
+            }
+            
+            // Validate config structure
+            if (!config || typeof config !== 'object') {
+                console.warn('Invalid configuration object');
+                showToast('Invalid share URL data ❌');
+                return;
+            }
             
             // Set scaffold type
-            if (config.type) {
+            if (config.type && typeof config.type === 'string') {
                 const typeInput = document.querySelector(`input[name="scaffoldType"][value="${config.type}"]`);
                 if (typeInput) {
                     typeInput.checked = true;
@@ -598,7 +801,7 @@ function handleUrlParams() {
             }
             
             // Set options
-            if (config.options) {
+            if (config.options && typeof config.options === 'object') {
                 currentOptions = { ...config.options };
             }
             
@@ -616,8 +819,11 @@ function handleUrlParams() {
                 updatePrompt();
             }, 100);
             
+            showToast('Configuration loaded from shared URL! 🔗');
+            
         } catch (err) {
-            console.warn('Failed to parse shared configuration:', err);
+            console.error('Unexpected error parsing shared configuration:', err);
+            showToast('Failed to load shared configuration ❌');
         }
     }
 }
@@ -638,9 +844,70 @@ function showToast(message) {
  * Escape HTML for safe insertion
  */
 function escapeHtml(text) {
+    if (!text || typeof text !== 'string') return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML.replace(/'/g, "\\'");
+}
+
+/**
+ * Sanitize user input to prevent XSS and other issues
+ * @param {string} input - User input to sanitize
+ * @param {number} maxLength - Maximum length (default 1000)
+ * @returns {string} Sanitized input
+ */
+function sanitizeInput(input, maxLength = 1000) {
+    if (!input || typeof input !== 'string') return '';
+    
+    // Trim whitespace and limit length
+    let sanitized = input.trim().substring(0, maxLength);
+    
+    // Remove potentially dangerous characters but keep valid punctuation
+    sanitized = sanitized.replace(/[<>"'`]/g, '');
+    
+    return sanitized;
+}
+
+/**
+ * Validate required fields
+ * @param {string} value - Value to validate
+ * @param {string} fieldName - Name of the field for error messages
+ * @returns {boolean} True if valid
+ */
+function validateRequired(value, fieldName) {
+    if (!value || value.trim() === '') {
+        showToast(`${fieldName} is required ⚠️`);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Validate and sanitize form input
+ * @param {HTMLInputElement} input - Input element to validate
+ * @returns {boolean} True if valid
+ */
+function validateFormInput(input) {
+    if (!input) return false;
+    
+    const value = input.value;
+    const isRequired = input.hasAttribute('required');
+    const fieldName = input.labels?.[0]?.textContent || input.name || 'Field';
+    
+    // Check required fields
+    if (isRequired && !validateRequired(value, fieldName)) {
+        input.focus();
+        return false;
+    }
+    
+    // Sanitize the input value
+    const sanitized = sanitizeInput(value);
+    if (sanitized !== value) {
+        input.value = sanitized;
+        showToast('Input sanitized for security 🛡️');
+    }
+    
+    return true;
 }
 
 /**
@@ -661,8 +928,27 @@ function debounce(func, wait) {
 // Debounced update function
 const debouncedUpdate = debounce(updatePrompt, 300);
 
+// Global error handlers
+window.addEventListener('error', (event) => {
+    console.error('Global JavaScript error:', event.error);
+    showToast('An unexpected error occurred ❌');
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
+    showToast('An unexpected error occurred ❌');
+});
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', init);
+
+// Fallback initialization if DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+    // Document is still loading, DOMContentLoaded will fire
+} else {
+    // Document is already loaded
+    init();
+}
 
 // Make functions globally available for inline event handlers
 window.copyVariation = copyVariation;

@@ -481,28 +481,28 @@ function generatePromptVariations(basePrompt, options = {}) {
     {
       name: 'Ultra Minimal',
       prompt: `${coreAction}. Code only, no explanations, no markdown formatting.`,
-      description: 'Absolute minimum tokens for quick prototyping (~8-12 tokens)',
+      description: 'Absolute minimum tokens for quick prototyping',
       category: 'speed',
       tokens: Math.ceil((coreAction.length + 35) / 4)
     },
     {
       name: 'Production Ready',
       prompt: `${coreAction}. Include: error handling, TypeScript types, comprehensive tests, clear documentation, and industry best practices. ${frameworkHints}. Follow SOLID principles and add security considerations. Ask user to clarify if necessary.`,
-      description: 'Enterprise-grade implementation with full coverage (~45-60 tokens)',
+      description: 'Enterprise-grade implementation with full coverage',
       category: 'quality',
       tokens: Math.ceil((coreAction.length + frameworkHints.length + 180) / 4)
     },
     {
       name: 'Learning Focused',
       prompt: `${coreAction}. Provide: step-by-step explanation, inline comments explaining each concept, multiple implementation approaches, common pitfalls to avoid, and links to relevant documentation. ${typeHints}. Make it educational and beginner-friendly. Ask user to clarify if necessary.`,
-      description: 'Educational with explanations and alternatives (~55-70 tokens)',
+      description: 'Educational with explanations and alternatives',
       category: 'educational',
       tokens: Math.ceil((coreAction.length + typeHints.length + 220) / 4)
     },
     {
       name: 'Constraint Heavy',
       prompt: `${cleanBasePrompt}. Strict requirements: zero external dependencies, maximum 50 lines total, pure functions only, comprehensive error handling with custom error classes, extensive inline documentation, cross-platform compatibility, memory optimization, and performance benchmarks included. Follow functional programming paradigms exclusively. Ask user to clarify if necessary.`,
-      description: 'Maximum constraints and technical requirements (~75-95 tokens)',
+      description: 'Maximum constraints and technical requirements',
       category: 'constrained',
       tokens: Math.ceil((cleanBasePrompt.length + 280) / 4)
     }
@@ -546,6 +546,20 @@ function getTypeHints(type) {
   };
   return hints[type] || 'Focus on code quality and maintainability';
 }
+
+// Mock project context for web demo
+// In the CLI version, this data comes from analyzing the actual file system
+const MOCK_PROJECT_CONTEXT = {
+  hasTypeScript: true,
+  hasReact: false,
+  hasNode: true,
+  packageManager: 'pnpm',
+  hasLinting: true,
+  hasFormatting: true,
+  hasTesting: false,
+  hasGitignore: true,
+  hasReadme: true
+};
 
 /**
  * Gets mock project context for demo

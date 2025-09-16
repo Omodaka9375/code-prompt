@@ -141,8 +141,32 @@ const COMPLEXITY_LEVELS = {
 function buildPrompt(type, options) {
   const template = PROMPT_TEMPLATES[type];
   if (!template) return 'Unknown prompt type.';
+  
+  // Ensure options is an object with defaults
+  options = options || {};
+  
+  // Set default values for all possible template variables
+  const defaultOptions = {
+    projectType: 'node',
+    framework: 'vanilla',
+    projectName: '',
+    feature: 'component',
+    pattern: 'function', 
+    module: 'service',
+    testType: 'unit',
+    library: 'Jest',
+    docType: 'api',
+    issue: 'bug',
+    component: 'component',
+    approach: 'debug',
+    outputFormat: 'code',
+    complexity: 'simple'
+  };
+  
+  // Merge user options with defaults
+  options = { ...defaultOptions, ...options };
 
-  // Handle custom framework logic first
+  // Handle custom framework logic
   if (options.framework === 'other' && options.customFramework) {
     options.framework = options.customFramework;
   }
