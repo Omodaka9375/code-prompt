@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodePrompt 🚀 - AI Prompt Generator for Developers</title>
+    <meta name="description" content="Generate token-efficient AI prompts for any coding task with framework-specific optimizations">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="CodePrompt 🚀 - AI Prompt Generator for Developers">
+    <meta property="og:description" content="Generate token-efficient AI prompts for any coding task with framework-specific optimizations. Save 50-70% on AI token costs with smart constraints and framework intelligence.">
+    <meta property="og:image" content="https://codeprompt.me/demo.png">
+    <meta property="og:image:alt" content="CodePrompt - Token-efficient AI prompt generator interface showing prompt configuration options and real-time analytics">
+    <meta property="og:url" content="https://codeprompt.me">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CodePrompt">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CodePrompt 🚀 - AI Prompt Generator for Developers">
+    <meta name="twitter:description" content="Generate token-efficient AI prompts for any coding task. Save 50-70% on AI token costs with smart constraints and framework intelligence.">
+    <meta name="twitter:image" content="https://codeprompt.me/demo.png">
+    <meta name="twitter:image:alt" content="CodePrompt interface showing prompt optimization features">
+    
+    <!-- Additional Meta Tags -->
+    <meta name="author" content="Branislav">
+    <meta name="keywords" content="AI prompts, code generation, token optimization, developer tools, programming, framework-specific prompts, cost savings">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#1a1a2e">
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">
+                    <span class="emoji">🚀</span>
+                    CodePrompt.me
+                </h1>
+                <p class="tagline">Token-efficient AI prompt generator for developers</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+
+            <!-- Main Generator -->
+            <section class="generator">
+                <div class="generator-layout">
+                    <!-- Left Panel - Configuration -->
+                    <div class="config-panel">
+                        <h2>📋 Configure Your Prompt</h2>
+                        
+                        <!-- Scaffold Type Selection -->
+                        <div class="form-group">
+                            <label class="form-label">What type of code prompt do you need?</label>
+                            <div class="radio-grid">
+                                <label class="radio-card">
+                                    <input type="radio" name="scaffoldType" value="init" checked>
+                                    <div class="radio-content">
+                                        <span class="emoji">🚀</span>
+                                        <span class="title">Initialize Project</span>
+                                        <span class="desc">Bootstrap new projects</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="scaffoldType" value="feature">
+                                    <div class="radio-content">
+                                        <span class="emoji">🔧</span>
+                                        <span class="title">Build Feature</span>
+                                        <span class="desc">Implement features</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="scaffoldType" value="architecture">
+                                    <div class="radio-content">
+                                        <span class="emoji">🏗️</span>
+                                        <span class="title">Design Architecture</span>
+                                        <span class="desc">Plan system design</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="scaffoldType" value="testing">
+                                    <div class="radio-content">
+                                        <span class="emoji">🧪</span>
+                                        <span class="title">Create Tests</span>
+                                        <span class="desc">Generate test suites</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="scaffoldType" value="docs">
+                                    <div class="radio-content">
+                                        <span class="emoji">📚</span>
+                                        <span class="title">Generate Docs</span>
+                                        <span class="desc">Create documentation</span>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="scaffoldType" value="fix">
+                                    <div class="radio-content">
+                                        <span class="emoji">🔧</span>
+                                        <span class="title">Fix Issues</span>
+                                        <span class="desc">Fix problems</span>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Options Container -->
+                        <div id="dynamicOptions" class="dynamic-options">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+
+                        <!-- Universal Options -->
+                        <div class="universal-options">
+                            <div class="form-group">
+                                <label class="form-label">Output Format</label>
+                                <select name="outputFormat" class="form-select">
+                                    <option value="code">💻 Code only (most efficient)</option>
+                                    <option value="commented">📝 Code with comments</option>
+                                    <option value="guided">📋 Code with setup steps</option>
+                                    <option value="detailed">📖 Detailed explanation</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Implementation Complexity</label>
+                                <select name="complexity" class="form-select">
+                                    <option value="simple">🎯 Simple (&lt;50 lines)</option>
+                                    <option value="medium">⚡ Standard (&lt;200 lines)</option>
+                                    <option value="complex">🔥 Full featured</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel - Results -->
+                    <div class="results-panel">
+                        <h2>🚀 Generated Prompt</h2>
+                        
+                        <!-- Analytics Display -->
+                        <div class="analytics">
+                            <div class="analytics-grid">
+                                <div class="metric">
+                                    <span class="metric-value" id="tokenCount">0</span>
+                                    <span class="metric-label">Tokens</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value" id="efficiency">excellent</span>
+                                    <span class="metric-label">Efficiency</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-value" id="contextItems">0</span>
+                                    <span class="metric-label">Context Items</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generated Prompt Display -->
+                        <div class="prompt-display">
+                            <div class="prompt-header">
+                                <h3>Optimized Prompt</h3>
+                                <button class="copy-btn" id="copyPrompt" title="Copy to clipboard">
+                                    📋 Copy
+                                </button>
+                            </div>
+                            <div class="prompt-content" id="promptContent">
+                                <p class="placeholder">Select options to generate your optimized prompt...</p>
+                            </div>
+                        </div>
+
+                        <!-- Context Detection -->
+                        <div class="context-detection" id="contextDetection" style="display: none;">
+                            <h3>🔍 Detected Context</h3>
+                            <div id="contextList" class="context-list">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Optimization Tips -->
+                        <div class="optimization-tips" id="optimizationTips" style="display: none;">
+                            <h3>💡 Optimization Tips</h3>
+                            <ul id="tipsList" class="tips-list">
+                                <!-- Will be populated by JavaScript -->
+                            </ul>
+                        </div>
+
+                        <!-- Prompt Variations -->
+                        <div class="prompt-variations" id="promptVariations">
+                            <h3>🧪 Prompt Variations</h3>
+                            <div class="variations-container" id="variationsContainer">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <!-- Export Options -->
+                        <div class="export-options">
+                            <h3>📥 Export Options</h3>
+                            <div class="export-buttons">
+                                <button class="btn btn-secondary" id="downloadTxt">
+                                    📄 Save .txt
+                                </button>
+                                <button class="btn btn-secondary" id="downloadMd">
+                                    📝 Save .md
+                                </button>
+                                <button class="btn btn-secondary" id="shareUrl">
+                                    🔗 Share Configuration
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section class="features">
+                <h2>✨ Why CodePrompt?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🎯</span>
+                        <h3>Token Efficient</h3>
+                        <p>50-70% reduction in AI token usage through optimized prompts and smart constraints</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🔍</span>
+                        <h3>Framework Smart</h3>
+                        <p>Automatically optimizes for React, Vue, Angular, Node.js and 15+ other frameworks</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🧪</span>
+                        <h3>A/B Testing</h3>
+                        <p>Four distinct prompt variations from ultra-minimal to production-ready</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p>&copy; 2025 CodePrompt.me</p>
+                    <p>Token-efficient AI prompt generator for developers</p>
+                </div>
+                <div class="footer-right">
+                    <a href="https://codeprompt.me" class="footer-link">Website</a>
+                    <a href="https://github.com/Omodaka9375/code-prompt" class="footer-link">GitHub</a>
+                    <a href="https://github.com/Omodaka9375/code-prompt" class="footer-link">CLI Tool</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications -->
+    <div id="toast" class="toast"></div>
+
+    <!-- JavaScript -->
+    <script src="prompt-builder.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
